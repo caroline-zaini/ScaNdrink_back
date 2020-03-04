@@ -1,6 +1,8 @@
 // require pour connexion front et back :
 var fileUpload = require('express-fileupload');
 
+require('./models/connexion')
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -9,6 +11,8 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+
+
 
 var app = express();
 
