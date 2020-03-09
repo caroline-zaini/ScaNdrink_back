@@ -1,28 +1,57 @@
 var express = require('express');
 var router = express.Router();
 
-// générer une chaîne de caractère aléatoie :
+/**
+ * model's import :
+ */
+var usersModel = require('../models/user')
+var ordersModel = require('../models/order')
+
+/**
+ * crypte the password and token :
+ */
 var uid2 = require("uid2");
-
-// Import du module pour encrypter en sha256 :
 var SHA256 = require("crypto-js/sha256");
-
-// - Import du module pour encoder en base 64 (64 caractère) :
 var encBase64 = require("crypto-js/enc-base64");
 
+/**
+ * Stripe :
+ */
+const stripe = require('stripe')('sk_test_HACHM2RbLYoPnKGMCmDfbXgL00nh8yzE90');
 
 
-var usersModel = require('../models/user')
+/* 
+ * GET inscription page : 
+ */
+router.post('/monPaiement', async function(req, res, next) {
+
+  
+  
+ var newOrder = new ordersModel ({
+
+  produit: [{name: req.body.produitName, price: req.body.produitPrice, quantity: req.body.produitQuantity }],
+  total: req.body.total
+
+ })
+
+ var saveOrder = await newOrder.save()
+
+ console.log('saveOrder.total :', saveOrder.total);
+ res.json({result:true, saveOrder})
+
+});
 
 
 
-
-
-/* GET inscription page. */
+/* 
+ * GET inscription page : 
+ */
   router.post('/inscription', async function(req, res, next) {
 
     console.log("Hello Back Inscription")
     console.log('req.body.firstNameFromFront', req.body.firstNameFromFront)
+
+   
 
     var result = false;
     var saveUser = null
@@ -60,6 +89,8 @@ var usersModel = require('../models/user')
       password: SHA256(req.body.password_inscription+salt).toString(encBase64), 
       token: uid2(32),
       salt: salt,
+    
+    
     })
     
 
@@ -72,25 +103,32 @@ var usersModel = require('../models/user')
     if(saveUser){
       result = true
       token = saveUser.token
+  
     }
    
   } 
 
-   res.json({result, saveUser, error, token})
+  var idUser = saveUser._id
+ 
+
+  console.log('idUser back_inscription:', idUser);
+
+   res.json({result, saveUser, error, token, idUser})
 
   });
 
 
 
-
-  
-/* GET connexion page. */
+/* 
+ * GET connexion page : 
+ */
 router.post('/connexion', async function(req, res, next) {
 
   console.log('Hello Back connexion', req.body.email_connexion);
 
   var result = false
   var user = null
+  var userID;
   var error = []
   var token = null
   var salt = uid2(32);
@@ -108,6 +146,8 @@ router.post('/connexion', async function(req, res, next) {
   }
 
   console.log('user :', user);
+
+
   
   if (user) {
     
@@ -121,7 +161,8 @@ router.post('/connexion', async function(req, res, next) {
     if (passwordEncrypt === user.password) {
       result = true
       token = user.token 
-      res.json({result, user, error, token})
+      userID = user._id
+      res.json({result, user, error, token, userID})
     } else {
       result = false
       error.push('Mot de passe incorrect')
@@ -131,6 +172,8 @@ router.post('/connexion', async function(req, res, next) {
   } else {
     error.push('email incorrect')
   }
+
+  console.log('userID :', userID);
 
   
 
