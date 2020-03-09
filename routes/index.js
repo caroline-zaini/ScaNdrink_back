@@ -10,16 +10,8 @@ var SHA256 = require("crypto-js/sha256");
 // - Import du module pour encoder en base 64 (64 caractère) :
 var encBase64 = require("crypto-js/enc-base64");
 
-<<<<<<< HEAD
 var usersModel = require('../models/user')
 var ProUserModel = require('../models/qrcode')
-=======
-
-
-var usersModel = require('../models/user')
-
-
->>>>>>> 56222141f1c4e6a1b376b3f17aac32e4137b9392
 
 
 
