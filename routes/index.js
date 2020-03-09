@@ -11,7 +11,7 @@ var SHA256 = require("crypto-js/sha256");
 var encBase64 = require("crypto-js/enc-base64");
 
 var usersModel = require('../models/user')
-
+var ProUserModel = require('../models/qrcode')
 
 
 
@@ -119,6 +119,27 @@ router.get('/connexion', async function(req, res, next) {
 
 
 });
+
+
+/* GET QR code informations. */
+
+router.post('/qrcode', async function(req, res, next) {
+
+  console.log("test",req.body.qrCodeFromFront)
+
+
+
+  const findQrcode = await ProUserModel.find({
+   'table.tableToken' : req.body.qrCodeFromFront
+  });
+  console.log('TEST_________________',findQrcode)
+
+
+  res.json({findQrcode})
+  });
+
+
+
 
 
 
