@@ -14,32 +14,8 @@ var uid2 = require("uid2");
 var SHA256 = require("crypto-js/sha256");
 var encBase64 = require("crypto-js/enc-base64");
 
-/**
- * Stripe :
- */
-const stripe = require('stripe')('sk_test_HACHM2RbLYoPnKGMCmDfbXgL00nh8yzE90');
-
-
-/* 
- * GET inscription page : 
- */
-router.post('/monPaiement', async function(req, res, next) {
-
-  
-  
- var newOrder = new ordersModel ({
-
-  produit: [{name: req.body.produitName, price: req.body.produitPrice, quantity: req.body.produitQuantity }],
-  total: req.body.total
-
- })
-
- var saveOrder = await newOrder.save()
-
- console.log('saveOrder.total :', saveOrder.total);
- res.json({result:true, saveOrder})
-
-});
+var usersModel = require('../models/user')
+var ProUserModel = require('../models/qrcode')
 
 
 
@@ -179,6 +155,27 @@ router.post('/connexion', async function(req, res, next) {
 
 
 });
+
+
+/* GET QR code informations. */
+
+router.post('/qrcode', async function(req, res, next) {
+
+  console.log("test",req.body.qrCodeFromFront)
+
+
+
+  const findQrcode = await ProUserModel.find({
+   'table.tableToken' : req.body.qrCodeFromFront
+  });
+  console.log('TEST_________________',findQrcode)
+
+
+  res.json({findQrcode})
+  });
+
+
+
 
 
 
