@@ -5,9 +5,9 @@ var userSchema = mongoose.Schema({
     lastName: String,
     email: String,
     phone: String,
-    salt: String,
     password: String,
     token: String,
+    salt: String,
 });
 
 var UserModel = mongoose.model('users', userSchema);
