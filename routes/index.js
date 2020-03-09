@@ -13,10 +13,6 @@ var encBase64 = require("crypto-js/enc-base64");
 var usersModel = require('../models/user')
 var ProUserModel = require('../models/qrcode')
 
-
-
-
-
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
