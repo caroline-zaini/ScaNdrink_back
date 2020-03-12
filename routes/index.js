@@ -14,8 +14,7 @@ var uid2 = require("uid2");
 var SHA256 = require("crypto-js/sha256");
 var encBase64 = require("crypto-js/enc-base64");
 
-var usersModel = require('../models/user')
-var ProUserModel = require('../models/qrcode')
+var proUserModel = require('../models/qrcode')
 
 
 
@@ -157,25 +156,24 @@ router.post('/connexion', async function(req, res, next) {
 });
 
 
-/* GET QR code informations. */
+router.post('/load-menu', async function(req, res, next) {
 
-router.post('/qrcode', async function(req, res, next) {
+  var allMenu = null;
+  var restoBdd = await proUserModel.findOne({ token: req.body.restoToken })
 
-  console.log("test",req.body.qrCodeFromFront)
+  console.log('restoBdd :', restoBdd);
 
+  if (restoBdd) {
+    allMenu = restoBdd.menu;
+  }
 
+  console.log('allMenu :', allMenu);
 
-  const findQrcode = await ProUserModel.find({
-   'table.tableToken' : req.body.qrCodeFromFront
-  });
-  console.log('TEST_________________',findQrcode)
+  // Envoie des informations importantes vers le front-end
 
+  res.json({ allMenu })
 
-  res.json({findQrcode})
-  });
-
-
-
+});
 
 
 
