@@ -181,7 +181,6 @@ router.post('/monPaiement', async function(req, res, next) {
   router.post('/order', async function(req, res, next) {
 
     console.log('order in back :');
-
     var order = await ordersModel.findOne({userId: req.body.idUser})
   
     console.log('order in back:', order.status);
@@ -191,27 +190,25 @@ router.post('/monPaiement', async function(req, res, next) {
   });
 
 
-/* 
- * GET QR code informations. 
- */
 
-router.post('/qrcode', async function(req, res, next) {
+router.post('/load-menu', async function(req, res, next) {
 
-  console.log("test",req.body.qrCodeFromFront)
+  var allMenu = null;
+  var restoBdd = await proUserModel.findOne({ token: req.body.restoToken })
 
+  console.log('restoBdd :', restoBdd);
 
+  if (restoBdd) {
+    allMenu = restoBdd.menu;
+  }
 
-  const findQrcode = await ProUserModel.find({
-   'table.tableToken' : req.body.qrCodeFromFront
-  });
-  console.log('TEST_________________',findQrcode)
+  console.log('allMenu :', allMenu);
 
+  // Envoie des informations importantes vers le front-end
 
-  res.json({findQrcode})
-  });
+  res.json({ allMenu })
 
-
-
+});
 
 
 
