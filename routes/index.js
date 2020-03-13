@@ -6,6 +6,7 @@ var router = express.Router();
  */
 var usersModel = require('../models/user')
 var ordersModel = require('../models/order')
+var ProUserModel = require('../models/qrcode')
 
 /**
  * crypte the password and token :
@@ -14,8 +15,8 @@ var uid2 = require("uid2");
 var SHA256 = require("crypto-js/sha256");
 var encBase64 = require("crypto-js/enc-base64");
 
-var usersModel = require('../models/user')
-var ProUserModel = require('../models/qrcode')
+
+
 
 
 
@@ -24,10 +25,6 @@ var ProUserModel = require('../models/qrcode')
  */
   router.post('/inscription', async function(req, res, next) {
 
-    console.log("Hello Back Inscription")
-    console.log('req.body.firstNameFromFront', req.body.firstNameFromFront)
-
-   
 
     var result = false;
     var saveUser = null
@@ -53,9 +50,6 @@ var ProUserModel = require('../models/qrcode')
   }
 
   if(error.length == 0) {
-    
-    console.log('1. req.body.email_inscription :', req.body.email_inscription);
-    console.log('2. password_inscription:', req.body.password_inscription);
 
     var newUser = new usersModel ({
       firstName: req.body.firstNameFromFront,
@@ -65,16 +59,10 @@ var ProUserModel = require('../models/qrcode')
       password: SHA256(req.body.password_inscription+salt).toString(encBase64), 
       token: uid2(32),
       salt: salt,
-    
-    
     })
-    
 
     var saveUser = await newUser.save()
 
-    console.log('3.bdd email inscription :', newUser.email_inscription);
-    console.log('4.bdd password inscription', newUser.password_inscription);
-    console.log('5. bdd salt inscription :', newUser.salt);
 
     if(saveUser){
       result = true
@@ -104,7 +92,6 @@ router.post('/connexion', async function(req, res, next) {
 
   var result = false
   var user = null
-  var userID;
   var error = []
   var token = null
   var salt = uid2(32);
@@ -130,15 +117,11 @@ router.post('/connexion', async function(req, res, next) {
 
     var passwordEncrypt =  SHA256(req.body.password_connexion + user.salt).toString(encBase64) 
 
-    console.log('salt bdd :', user.salt);
-    console.log('passwordEncrypt :', passwordEncrypt);
-    console.log('password bdd :', user.password);
-
     if (passwordEncrypt === user.password) {
       result = true
       token = user.token 
-      userID = user._id
-      res.json({result, user, error, token, userID})
+      var idUser = user._id
+      res.json({result, user, error, token, idUser})
     } else {
       result = false
       error.push('Mot de passe incorrect')
@@ -149,15 +132,68 @@ router.post('/connexion', async function(req, res, next) {
     error.push('email incorrect')
   }
 
-  console.log('userID :', userID);
-
-  
-
+  console.log('idUser route connexion :', idUser);
 
 });
 
 
-/* GET QR code informations. */
+
+
+/* 
+ * GET mon Paiment page. 
+ */
+
+router.post('/monPaiement', async function(req, res, next) {
+
+  console.log('route monPaiement');
+
+  var result = false;
+  var panierBack = JSON.parse(req.body.panierSend)
+  var status = 'Payed'
+
+  console.log('panierBack :', panierBack);
+  
+
+  var newOrder = new ordersModel ({
+    userId: { _id: req.body.idUser},
+    panier: panierBack,
+    total: req.body.total,
+    status: status
+  })
+
+
+  var saveOrder = await newOrder.save()
+
+ 
+  if(saveOrder) {
+    result = true;
+
+  }
+
+  res.json({result, saveOrder})
+  
+  });
+
+
+/* 
+ * GET order informations. 
+ */
+  router.post('/order', async function(req, res, next) {
+
+    console.log('order in back :');
+
+    var order = await ordersModel.findOne({userId: req.body.idUser})
+  
+    console.log('order in back:', order.status);
+  
+    res.json({ result:true, status: order.status })
+  
+  });
+
+
+/* 
+ * GET QR code informations. 
+ */
 
 router.post('/qrcode', async function(req, res, next) {
 

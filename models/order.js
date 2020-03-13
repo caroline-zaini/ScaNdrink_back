@@ -1,9 +1,16 @@
 var mongoose = require('mongoose');
 
+var produitSchema =  mongoose.Schema({
+    name: String, 
+    quantity: Number,
+    price: Number, 
+})
+
 var orderSchema = mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
-    produit: [{name: String, price: String, quantity: String}],
+    panier: [produitSchema],
     total: String,
+    status: String,
 });
 
 module.exports = mongoose.model('order', orderSchema);
