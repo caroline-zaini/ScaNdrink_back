@@ -149,7 +149,7 @@ router.post('/monPaiement', async function(req, res, next) {
 
   var result = false;
   var panierBack = JSON.parse(req.body.panierSend)
-  var status = 'Payed'
+  var status = 'Payée'
 
   console.log('panierBack :', panierBack);
   
@@ -187,9 +187,25 @@ router.post('/monPaiement', async function(req, res, next) {
   
     console.log('order in back:', order.status);
   
-    res.json({ result:true, status: order.status })
+    res.json({ result:true, status: order.status, orderId:order._id })
   
   });
+
+  
+/* 
+ * GET order informations. 
+ */
+router.get('/orderId', async function(req, res, next) {
+
+  console.log('order in back :');
+  var order = await ordersModel.findOne({userId: req.body.idUser})
+
+  console.log('order in back:', order.status);
+
+  res.json({ result:true, orderId: order._id })
+
+});
+
 
 
 
