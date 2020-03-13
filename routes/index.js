@@ -175,6 +175,8 @@ router.post('/monPaiement', async function(req, res, next) {
   });
 
 
+  
+
 /* 
  * GET order informations. 
  */
