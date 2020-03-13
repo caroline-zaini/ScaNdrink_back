@@ -1,28 +1,30 @@
 var express = require('express');
 var router = express.Router();
 
-// générer une chaîne de caractère aléatoie :
+/**
+ * model's import :
+ */
+var usersModel = require('../models/user')
+var ordersModel = require('../models/order')
+var ProUserModel = require('../models/qrcode')
+
+/**
+ * crypte the password and token :
+ */
 var uid2 = require("uid2");
-
-// Import du module pour encrypter en sha256 :
 var SHA256 = require("crypto-js/sha256");
-
-// - Import du module pour encoder en base 64 (64 caractère) :
 var encBase64 = require("crypto-js/enc-base64");
 
 
 
-var usersModel = require('../models/user')
 
 
 
-
-
-/* GET inscription page. */
+/* 
+ * GET inscription page : 
+ */
   router.post('/inscription', async function(req, res, next) {
 
-    console.log("Hello Back Inscription")
-    console.log('req.body.firstNameFromFront', req.body.firstNameFromFront)
 
     var result = false;
     var saveUser = null
@@ -48,9 +50,6 @@ var usersModel = require('../models/user')
   }
 
   if(error.length == 0) {
-    
-    console.log('1. req.body.email_inscription :', req.body.email_inscription);
-    console.log('2. password_inscription:', req.body.password_inscription);
 
     var newUser = new usersModel ({
       firstName: req.body.firstNameFromFront,
@@ -61,30 +60,32 @@ var usersModel = require('../models/user')
       token: uid2(32),
       salt: salt,
     })
-    
 
     var saveUser = await newUser.save()
 
-    console.log('3.bdd email inscription :', newUser.email_inscription);
-    console.log('4.bdd password inscription', newUser.password_inscription);
-    console.log('5. bdd salt inscription :', newUser.salt);
 
     if(saveUser){
       result = true
       token = saveUser.token
+  
     }
    
   } 
 
-   res.json({result, saveUser, error, token})
+  var idUser = saveUser._id
+ 
+
+  console.log('idUser back_inscription:', idUser);
+
+   res.json({result, saveUser, error, token, idUser})
 
   });
 
 
 
-
-  
-/* GET connexion page. */
+/* 
+ * GET connexion page : 
+ */
 router.post('/connexion', async function(req, res, next) {
 
   console.log('Hello Back connexion', req.body.email_connexion);
@@ -108,20 +109,19 @@ router.post('/connexion', async function(req, res, next) {
   }
 
   console.log('user :', user);
+
+
   
   if (user) {
     
 
     var passwordEncrypt =  SHA256(req.body.password_connexion + user.salt).toString(encBase64) 
 
-    console.log('salt bdd :', user.salt);
-    console.log('passwordEncrypt :', passwordEncrypt);
-    console.log('password bdd :', user.password);
-
     if (passwordEncrypt === user.password) {
       result = true
       token = user.token 
-      res.json({result, user, error, token})
+      var idUser = user._id
+      res.json({result, user, error, token, idUser})
     } else {
       result = false
       error.push('Mot de passe incorrect')
@@ -132,8 +132,81 @@ router.post('/connexion', async function(req, res, next) {
     error.push('email incorrect')
   }
 
+  console.log('idUser route connexion :', idUser);
+
+});
+
+
+
+
+/* 
+ * GET mon Paiment page. 
+ */
+
+router.post('/monPaiement', async function(req, res, next) {
+
+  console.log('route monPaiement');
+
+  var result = false;
+  var panierBack = JSON.parse(req.body.panierSend)
+  var status = 'Payed'
+
+  console.log('panierBack :', panierBack);
   
 
+  var newOrder = new ordersModel ({
+    userId: { _id: req.body.idUser},
+    panier: panierBack,
+    total: req.body.total,
+    status: status
+  })
+
+
+  var saveOrder = await newOrder.save()
+
+ 
+  if(saveOrder) {
+    result = true;
+
+  }
+
+  res.json({result, saveOrder})
+  
+  });
+
+
+/* 
+ * GET order informations. 
+ */
+  router.post('/order', async function(req, res, next) {
+
+    console.log('order in back :');
+    var order = await ordersModel.findOne({userId: req.body.idUser})
+  
+    console.log('order in back:', order.status);
+  
+    res.json({ result:true, status: order.status })
+  
+  });
+
+
+
+router.post('/load-menu', async function(req, res, next) {
+
+  var allMenu = null;
+  var restoBdd = await proUserModel.findOne({ token: req.body.restoToken })
+
+  console.log('restoBdd :', restoBdd);
+
+  if (restoBdd) {
+    allMenu = restoBdd.menu;
+  }
+
+  console.log('allMenu :', allMenu);
+
+  // Envoie des informations importantes vers le front-end
+
+  res.json({ allMenu })
 
 });
 
